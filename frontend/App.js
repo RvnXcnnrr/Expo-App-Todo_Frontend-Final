@@ -9,7 +9,12 @@ import AddTaskScreen from './screens/AddTaskScreen';
 
 const Stack = createStackNavigator();
 
-const BACKEND_URL = 'http://10.0.2.2:8000';
+// ✅ Toggle this flag to switch between emulator and real device
+const USING_EMULATOR = false;
+const BACKEND_URL = USING_EMULATOR
+  ? 'http://10.0.2.2:8000'
+  : 'http://192.168.1.5:8000';
+
 
 
 
