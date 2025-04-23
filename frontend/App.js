@@ -9,14 +9,7 @@ import AddTaskScreen from './screens/AddTaskScreen';
 
 const Stack = createStackNavigator();
 
-// ✅ Toggle this flag to switch between emulator and real device
-const USING_EMULATOR = false;
-const BACKEND_URL = USING_EMULATOR
-  ? 'http://10.0.2.2:8000'
-  : 'http://192.168.1.5:8000';
-
-
-
+const BACKEND_URL = 'https://todo-expo-backend.onrender.com';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
