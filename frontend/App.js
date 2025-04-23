@@ -1,4 +1,3 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, TouchableOpacity, Animated, Easing } from 'react-native';
@@ -16,13 +15,11 @@ export default function App() {
   const [tasks, setTasks] = useState([]);
   const spinValue = new Animated.Value(0);
 
-  // Animation for theme toggle
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg']
   });
 
-  // Load saved tasks and theme preference
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -41,7 +38,6 @@ export default function App() {
     loadData();
   }, []);
 
-  // Save tasks and theme preference
   useEffect(() => {
     const saveData = async () => {
       try {
@@ -167,6 +163,7 @@ export default function App() {
             <AddTaskScreen 
               {...props} 
               addTask={addTask} 
+              editTask={editTask}
               isDarkMode={isDarkMode}
             />
           )}
@@ -212,5 +209,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
 });
-
-// Removed duplicate export default statement

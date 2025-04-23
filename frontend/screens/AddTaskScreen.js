@@ -1,5 +1,4 @@
-// screens/AddTaskScreen.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,23 +15,51 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-const AddTaskScreen = ({ navigation, addTask, isDarkMode }) => {
+const AddTaskScreen = ({ navigation, route, addTask, editTask, isDarkMode }) => {
   const [text, setText] = useState("");
   const [category, setCategory] = useState("Personal");
   const [priority, setPriority] = useState("Medium");
   const [buttonScale] = useState(new Animated.Value(1));
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentTaskId, setCurrentTaskId] = useState(null);
 
-  const handleAddTask = () => {
+  useEffect(() => {
+    if (route.params?.taskToEdit) {
+      const { taskToEdit } = route.params;
+      setText(taskToEdit.text);
+      setCategory(taskToEdit.category);
+      setPriority(taskToEdit.priority);
+      setIsEditing(true);
+      setCurrentTaskId(taskToEdit.id);
+      navigation.setOptions({ title: 'Edit Task' });
+    } else {
+      setIsEditing(false);
+      setCurrentTaskId(null);
+      navigation.setOptions({ title: 'Add New Task' });
+    }
+  }, [route.params]);
+
+  const handleSubmit = () => {
     if (text.trim()) {
-      const newTask = {
-        id: Date.now().toString(),
-        text: text.trim(),
-        completed: false,
-        category,
-        priority,
-        createdAt: new Date().toISOString(),
-      };
-      addTask(newTask);
+      if (isEditing) {
+        const updatedTask = {
+          id: currentTaskId,
+          text: text.trim(),
+          category,
+          priority,
+        };
+        editTask(currentTaskId, updatedTask);
+      } else {
+        const newTask = {
+          id: Date.now().toString(),
+          text: text.trim(),
+          completed: false,
+          category,
+          priority,
+          createdAt: new Date().toISOString(),
+        };
+        addTask(newTask);
+      }
       navigation.goBack();
     }
   };
@@ -51,7 +78,7 @@ const AddTaskScreen = ({ navigation, addTask, isDarkMode }) => {
         easing: Easing.ease,
         useNativeDriver: true
       })
-    ]).start(handleAddTask);
+    ]).start(handleSubmit);
   };
 
   const categories = ["Work", "Personal", "Shopping", "Health", "Other"];
@@ -183,7 +210,9 @@ const AddTaskScreen = ({ navigation, addTask, isDarkMode }) => {
             disabled={!text.trim()}
             activeOpacity={0.7}
           >
-            <Text style={styles.addButtonText}>Add Task</Text>
+            <Text style={styles.addButtonText}>
+              {isEditing ? 'Save Changes' : 'Add Task'}
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       </LinearGradient>

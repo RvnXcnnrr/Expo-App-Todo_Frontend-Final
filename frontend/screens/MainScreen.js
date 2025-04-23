@@ -1,4 +1,3 @@
-// screens/MainScreen.js
 import React from 'react';
 import { 
   View, 
@@ -57,17 +56,18 @@ const MainScreen = ({
       friction={2}
       rightThreshold={40}
     >
-      <TouchableOpacity
+      <View
         style={[
           styles.taskItem,
           isDarkMode ? styles.darkTaskItem : styles.lightTaskItem,
           item.completed && styles.completedTask,
         ]}
-        onPress={() => toggleTaskCompletion(item.id)}
-        onLongPress={() => navigation.navigate('AddTask', { taskToEdit: item })}
-        activeOpacity={0.7}
       >
-        <View style={styles.taskContent}>
+        <TouchableOpacity
+          style={styles.taskContent}
+          onPress={() => toggleTaskCompletion(item.id)}
+          activeOpacity={0.7}
+        >
           <Ionicons
             name={item.completed ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
@@ -114,8 +114,15 @@ const MainScreen = ({
               )}
             </View>
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.editButton, isDarkMode ? styles.darkEditButton : styles.lightEditButton]}
+          onPress={() => navigation.navigate('AddTask', { taskToEdit: item })}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="create-outline" size={24} color={isDarkMode ? '#fff' : '#000'} />
+        </TouchableOpacity>
+      </View>
     </Swipeable>
   );
 
@@ -155,7 +162,6 @@ const MainScreen = ({
   );
 };
 
-// Reuse these functions from AddTaskScreen or import them
 const getCategoryColor = (category) => {
   const colors = {
     Work: "#FF5722",
