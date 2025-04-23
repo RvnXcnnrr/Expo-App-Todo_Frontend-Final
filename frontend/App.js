@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, TouchableOpacity, Animated, Easing } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Animated, Easing, Alert } from 'react-native';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import MainScreen from './screens/MainScreen';
 import AddTaskScreen from './screens/AddTaskScreen';
 
 const Stack = createStackNavigator();
+
+const BACKEND_URL = 'http://10.0.2.2:8000';
+
+
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -20,38 +23,24 @@ export default function App() {
     outputRange: ['0deg', '360deg']
   });
 
+  // Fetch tasks from backend on mount
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [savedTasks, savedTheme] = await Promise.all([
-          AsyncStorage.getItem('tasks'),
-          AsyncStorage.getItem('isDarkMode')
-        ]);
-        
-        if (savedTasks) setTasks(JSON.parse(savedTasks));
-        if (savedTheme) setIsDarkMode(savedTheme === 'true');
-      } catch (error) {
-        console.error('Error loading data:', error);
-      }
-    };
-    
-    loadData();
+    fetchTasksFromBackend();
   }, []);
 
-  useEffect(() => {
-    const saveData = async () => {
-      try {
-        await AsyncStorage.multiSet([
-          ['tasks', JSON.stringify(tasks)],
-          ['isDarkMode', isDarkMode.toString()]
-        ]);
-      } catch (error) {
-        console.error('Error saving data:', error);
+  const fetchTasksFromBackend = async () => {
+    try {
+      const response = await fetch(BACKEND_URL + '/tasks');
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
       }
-    };
-    
-    saveData();
-  }, [tasks, isDarkMode]);
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      Alert.alert('Error', 'Failed to load tasks from server.');
+    }
+  };
 
   const toggleDarkMode = () => {
     Animated.timing(spinValue, {
@@ -64,24 +53,85 @@ export default function App() {
     setIsDarkMode(!isDarkMode);
   };
 
-  const addTask = (task) => {
-    setTasks([...tasks, task]);
+  const addTask = async (task) => {
+    try {
+      const response = await fetch(BACKEND_URL + '/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(task)
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add task');
+      }
+      const newTask = await response.json();
+      setTasks([...tasks, newTask]);
+    } catch (error) {
+      console.error('Error adding task:', error);
+      Alert.alert('Error', 'Failed to add task.');
+    }
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const deleteTask = async (id) => {
+    try {
+      const response = await fetch(BACKEND_URL + '/tasks/' + id, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+      setTasks(tasks.filter(task => task.id !== id));
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      Alert.alert('Error', 'Failed to delete task.');
+    }
   };
 
-  const toggleTaskCompletion = (id) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ));
+  const toggleTaskCompletion = async (id) => {
+    try {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      const updatedTask = { ...task, completed: !task.completed };
+      const response = await fetch(BACKEND_URL + '/tasks/' + id, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedTask)
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
+      const returnedTask = await response.json();
+      setTasks(tasks.map(t => t.id === id ? returnedTask : t));
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+      Alert.alert('Error', 'Failed to update task.');
+    }
   };
 
-  const editTask = (id, updatedTask) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, ...updatedTask } : task
-    ));
+  const editTask = async (id, updatedTaskData) => {
+    try {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      const updatedTask = { ...task, ...updatedTaskData };
+      const response = await fetch(BACKEND_URL + '/tasks/' + id, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedTask)
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
+      const returnedTask = await response.json();
+      setTasks(tasks.map(t => t.id === id ? returnedTask : t));
+    } catch (error) {
+      console.error('Error editing task:', error);
+      Alert.alert('Error', 'Failed to update task.');
+    }
   };
 
   return (
