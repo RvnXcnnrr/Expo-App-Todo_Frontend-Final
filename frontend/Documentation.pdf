@@ -1,0 +1,132 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 500 >>
+stream
+BT
+/F1 24 Tf
+72 720 Td
+(Todo Expo Frontend) Tj
+ET
+BT
+/F1 12 Tf
+72 690 Td
+(This is the frontend application for the Todo Expo app built with Expo and React Native.) Tj
+ET
+BT
+/F1 14 Tf
+72 660 Td
+(Application Logo) Tj
+ET
+BT
+/F1 12 Tf
+72 640 Td
+(The application logo displayed after installing the Android APK is configured in the app.json file.) Tj
+ET
+BT
+/F1 12 Tf
+72 620 Td
+(The logo images are stored in the assets folder.) Tj
+ET
+BT
+/F1 12 Tf
+72 600 Td
+(- The main app icon is set via the icon field in app.json.) Tj
+ET
+BT
+/F1 12 Tf
+72 580 Td
+(- The Android adaptive icon is set via the android.adaptiveIcon.foregroundImage field in app.json.) Tj
+ET
+BT
+/F1 12 Tf
+72 560 Td
+(To update the application logo:) Tj
+ET
+BT
+/F1 12 Tf
+72 540 Td
+(1. Replace the image files in the assets folder with your desired logo images. Ensure the images meet the recommended sizes:) Tj
+ET
+BT
+/F1 12 Tf
+72 520 Td
+(   - icon.png or your chosen icon image: 512x512 pixels, PNG format.) Tj
+ET
+BT
+/F1 12 Tf
+72 500 Td
+(   - adaptive-icon.png or your chosen adaptive icon image: transparent PNG, recommended size 108x108 dp for foreground.) Tj
+ET
+BT
+/F1 12 Tf
+72 480 Td
+(2. Update the app.json file to point to the new icon files if you use different filenames.) Tj
+ET
+BT
+/F1 12 Tf
+72 460 Td
+(3. Rebuild the Android APK using EAS or Expo build commands to apply the changes.) Tj
+ET
+BT
+/F1 14 Tf
+72 430 Td
+(Building the APK) Tj
+ET
+BT
+/F1 12 Tf
+72 410 Td
+(To build the Android APK with the updated logo, run:) Tj
+ET
+BT
+/F1 12 Tf
+72 390 Td
+(eas build -p android --profile production) Tj
+ET
+BT
+/F1 12 Tf
+72 370 Td
+(This will upload your project to EAS Build and generate the APK with the configured application logo.) Tj
+ET
+BT
+/F1 14 Tf
+72 340 Td
+(Additional Information) Tj
+ET
+BT
+/F1 12 Tf
+72 320 Td
+(- The splash screen image is configured separately in app.json under the splash field.) Tj
+ET
+BT
+/F1 12 Tf
+72 300 Td
+(- For more details on configuring app icons and splash screens, refer to the Expo documentation.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000061 00000 n 
+0000000114 00000 n 
+0000000273 00000 n 
+0000000480 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+580
+%%EOF

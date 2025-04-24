@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -6,7 +6,9 @@ import {
   FlatList, 
   TouchableOpacity, 
   Animated, 
-  Platform 
+  Platform,
+  ScrollView,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
@@ -20,11 +22,58 @@ const MainScreen = ({
   isDarkMode,
   navigation 
 }) => {
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [priorityFilter, setPriorityFilter] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState(null);
+
+  const filters = ['All', 'Completed', 'Active'];
+  const categories = ['Work', 'Personal', 'Shopping', 'Health', 'Other'];
+  const priorities = ['Low', 'Medium', 'High'];
+
+  const filteredTasks = tasks.filter(task => {
+    // Apply status filter
+    if (activeFilter === 'Completed' && !task.completed) return false;
+    if (activeFilter === 'Active' && task.completed) return false;
+    
+    // Apply priority filter
+    if (priorityFilter && task.priority !== priorityFilter) return false;
+    
+    // Apply category filter
+    if (categoryFilter && task.category !== categoryFilter) return false;
+    
+    return true;
+  });
+
+  const clearFilters = () => {
+    setActiveFilter('All');
+    setPriorityFilter(null);
+    setCategoryFilter(null);
+  };
+
+  const showDeleteConfirmation = (id) => {
+    Alert.alert(
+      "Delete Task",
+      "Are you sure you want to delete this task?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        { 
+          text: "Delete", 
+          onPress: () => deleteTask(id),
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
   const renderRightActions = (progress, dragX, id) => {
     const trans = dragX.interpolate({
       inputRange: [0, 50, 100, 101],
       outputRange: [0, 0, 0, 1],
     });
+     
     
     return (
       <RectButton 
@@ -32,7 +81,7 @@ const MainScreen = ({
           styles.deleteButton, 
           isDarkMode ? styles.darkDeleteButton : styles.lightDeleteButton
         ]}
-        onPress={() => deleteTask(id)}
+        onPress={() => showDeleteConfirmation(id)}
       >
         <Animated.Text
           style={[
@@ -47,7 +96,6 @@ const MainScreen = ({
       </RectButton>
     );
   };
-
   const renderItem = ({ item }) => (
     <Swipeable
       renderRightActions={(progress, dragX) => 
@@ -133,10 +181,109 @@ const MainScreen = ({
         isDarkMode ? styles.darkContainer : styles.lightContainer,
       ]}
     >
-      {tasks.length === 0 ? (
+      {/* Filter Controls */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterContainer}
+        contentContainerStyle={styles.filterContent}
+      >
+        {/* Status Filters */}
+        {filters.map(filter => (
+          <TouchableOpacity
+            key={filter}
+            style={[
+              styles.filterButton,
+              activeFilter === filter && styles.activeFilter,
+              isDarkMode ? styles.darkFilterButton : styles.lightFilterButton,
+              activeFilter === filter && {
+                backgroundColor: isDarkMode ? '#444' : '#ddd',
+              }
+            ]}
+            onPress={() => setActiveFilter(filter)}
+          >
+            <Text style={[
+              styles.filterText,
+              isDarkMode ? styles.darkFilterText : styles.lightFilterText,
+              activeFilter === filter && styles.activeFilterText
+            ]}>
+              {filter}
+            </Text>
+          </TouchableOpacity>
+        ))}
+
+        {/* Priority Filters */}
+        {priorities.map(priority => (
+          <TouchableOpacity
+            key={priority}
+            style={[
+              styles.filterButton,
+              priorityFilter === priority && styles.activeFilter,
+              isDarkMode ? styles.darkFilterButton : styles.lightFilterButton,
+              priorityFilter === priority && {
+                backgroundColor: getPriorityColor(priority),
+                opacity: 0.8
+              }
+            ]}
+            onPress={() => setPriorityFilter(priorityFilter === priority ? null : priority)}
+          >
+            <Text style={[
+              styles.filterText,
+              isDarkMode ? styles.darkFilterText : styles.lightFilterText,
+              priorityFilter === priority && styles.activeFilterText
+            ]}>
+              {priority}
+            </Text>
+          </TouchableOpacity>
+        ))}
+
+        {/* Category Filters */}
+        {categories.map(category => (
+          <TouchableOpacity
+            key={category}
+            style={[
+              styles.filterButton,
+              categoryFilter === category && styles.activeFilter,
+              isDarkMode ? styles.darkFilterButton : styles.lightFilterButton,
+              categoryFilter === category && {
+                backgroundColor: getCategoryColor(category),
+                opacity: 0.8
+              }
+            ]}
+            onPress={() => setCategoryFilter(categoryFilter === category ? null : category)}
+          >
+            <Text style={[
+              styles.filterText,
+              isDarkMode ? styles.darkFilterText : styles.lightFilterText,
+              categoryFilter === category && styles.activeFilterText
+            ]}>
+              {category}
+            </Text>
+          </TouchableOpacity>
+        ))}
+
+        {(priorityFilter || categoryFilter || activeFilter !== 'All') && (
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              styles.clearFilterButton,
+              isDarkMode ? styles.darkClearFilterButton : styles.lightClearFilterButton
+            ]}
+            onPress={clearFilters}
+          >
+            <Ionicons 
+              name="close" 
+              size={16} 
+              color={isDarkMode ? '#fff' : '#333'} 
+            />
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+
+      {filteredTasks.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons
-            name="checkmark-done-circle"
+            name="filter"
             size={60}
             color={isDarkMode ? '#555' : '#ccc'}
           />
@@ -146,12 +293,28 @@ const MainScreen = ({
               isDarkMode ? styles.darkSecondaryText : styles.lightSecondaryText,
             ]}
           >
-            No tasks yet. Add one to get started!
+            No tasks match your filters
           </Text>
+          {(priorityFilter || categoryFilter || activeFilter !== 'All') && (
+            <TouchableOpacity
+              style={[
+                styles.clearAllButton,
+                isDarkMode ? styles.darkClearAllButton : styles.lightClearAllButton
+              ]}
+              onPress={clearFilters}
+            >
+              <Text style={[
+                styles.clearAllText,
+                isDarkMode ? styles.darkClearAllText : styles.lightClearAllText
+              ]}>
+                Clear Filters
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <FlatList
-          data={tasks}
+          data={filteredTasks}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
@@ -196,13 +359,64 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 16,
   },
   lightContainer: {
     backgroundColor: '#f5f5f5',
   },
   darkContainer: {
     backgroundColor: '#121212',
+  },
+  filterContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+    maxHeight: 50,
+  },
+  filterContent: {
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  filterButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 15,
+    marginHorizontal: 4,
+    borderWidth: 1,
+  },
+  lightFilterButton: {
+    backgroundColor: '#fff',
+    borderColor: '#ddd',
+  },
+  darkFilterButton: {
+    backgroundColor: '#333',
+    borderColor: '#444',
+  },
+  activeFilter: {
+    borderWidth: 0,
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  lightFilterText: {
+    color: '#333',
+  },
+  darkFilterText: {
+    color: '#fff',
+  },
+  activeFilterText: {
+    color: '#fff',
+  },
+  clearFilterButton: {
+    padding: 6,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lightClearFilterButton: {
+    backgroundColor: '#fff',
+  },
+  darkClearFilterButton: {
+    backgroundColor: '#333',
   },
   listContent: {
     paddingBottom: 80,
@@ -211,6 +425,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   emptyText: {
     marginTop: 16,
@@ -309,6 +524,40 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     padding: 10,
+  },
+  editButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    padding: 8,
+    borderRadius: 20,
+  },
+  lightEditButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  darkEditButton: {
+    backgroundColor: '#333',
+  },
+  clearAllButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+  },
+  lightClearAllButton: {
+    backgroundColor: '#e0e0e0',
+  },
+  darkClearAllButton: {
+    backgroundColor: '#333',
+  },
+  clearAllText: {
+    fontWeight: '600',
+  },
+  lightClearAllText: {
+    color: '#333',
+  },
+  darkClearAllText: {
+    color: '#fff',
   },
 });
 
